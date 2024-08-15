@@ -1,7 +1,8 @@
 #pragma once
 #include <vector>
 #include <string>
-
+#include <memory>
+#include "typedefs.h"
 inline std::vector<std::string> string_split(const std::string& s, std::string delimiter) {
     uint64 pos_start = 0, pos_end, delim_len = delimiter.length();
     std::string token;
@@ -47,4 +48,45 @@ inline bool is_number(char number[])
             return false;
     }
     return true;
+}
+
+
+inline uint64 str_to_uint64(const std::string& str, uint64 base = 10) {
+    return strtoull(str.c_str(), NULL, base);
+}
+
+__always_inline ssize_t inline_exit(int code)
+{
+    ssize_t ret;
+    asm volatile
+    (
+        "syscall"
+        : "=a" (ret)
+        //                 EDI     
+        : "0"(SYS_exit), "D"(code)
+        : "rcx", "r11", "memory"
+    );
+    return ret;
+}
+
+__always_inline ssize_t inline_write(int fd, const void *buf, ssize_t size)
+{
+    ssize_t ret;
+    asm volatile
+    (
+        "syscall"
+        : "=a" (ret)
+        //                 EDI      RSI       RDX
+        : "0"(SYS_write), "D"(fd), "S"(buf), "d"(size)
+        : "rcx", "r11", "memory"
+    );
+    return ret;
+}
+
+__always_inline void inline_int3()
+{
+    asm volatile
+    (
+        "int3"
+    );
 }

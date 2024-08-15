@@ -29,8 +29,9 @@ int main(int argc, char** argv) {
     injector.Init();
     std::cout << "Starting inject...\n";
     //injector.InjectShellcodeWriteAnonymous(scb, 0);
-    injector.InjectSharedLibrary_manualmap("bin/module.so");
-
+    injector.InjectSharedLibrary_dlopen("bin/module.so");
+    std::string a;
+    std::cin >> a;
     injector.FreeResources();
     std::cout << "Inject complete.\n";
     //while(1) {sleep(1);};

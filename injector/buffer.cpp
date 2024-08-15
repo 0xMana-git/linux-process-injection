@@ -29,7 +29,7 @@ Buffer::Buffer(std::string fname) {
 }
         
 void Buffer::DumpToFile(std::string fname) {
-    int fd = open(fname.c_str(), O_RDWR, 777);
-    write(fd, this->p_buf, this->buf_size);
+    int fd = open(fname.c_str(), O_RDWR | O_CREAT);
+    std::cout << write(fd, this->p_buf, this->buf_size) << "\n";
     close(fd);
 }

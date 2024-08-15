@@ -1,6 +1,0 @@
-
-
-namespace Injector
-{
-    
-} // namespace Injector
