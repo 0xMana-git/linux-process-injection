@@ -90,7 +90,7 @@ bool CInjector::OpenProcessMemory() {
     std::string mem_fname = GetBaseProcDir() + "mem";
     mem_fd = open(mem_fname.c_str(), O_RDWR);
     if(mem_fd == -1)
-        throw std::exception();
+        throw std::runtime_error("invalid memory file descriptor(start as sudo)");
     return true;
 }
 bool CInjector::CloseProcessMemory() {
@@ -155,9 +155,12 @@ bool CInjector::WriteBufferToProcess(const Buffer& buf, void* dst_addr) {
 
 
 byte* CInjector::dlsymEx(const std::string& mod_name, const std::string& sym_name) {
-
-    std::string modbase_s = string_split(string_split(exec_shell("cat " + GetBaseProcDir() + "maps" + " | grep " + mod_name), " ")[0], "-")[0];
     uint64 sym_offset = dlsymFile(mod_name, sym_name);
+    if(sym_offset == 0)
+        throw std::runtime_error(std::string("could not find ") + sym_name + " in " + mod_name);
+    std::string modbase_s = string_split(string_split(exec_shell("cat " + GetBaseProcDir() + "maps" + " | grep " + mod_name), " ")[0], "-")[0];
+    if(str_to_uint64(modbase_s, 16) == 0)
+        throw std::runtime_error(std::string("could not find ") + mod_name + " in process memory");
     return (byte*)(str_to_uint64(modbase_s, 16) + sym_offset);
 
 }

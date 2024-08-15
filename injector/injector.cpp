@@ -37,8 +37,6 @@ bool CInjector::InjectShellcodeWriteAnonymous(std::string filename, uint64 param
 }
 
 
-static char lol[] = "hello";
-
 bool CInjector::InjectSharedLibrary_manualmap(std::string filename) {
     uint64 entry_offset = dlsymFile(filename, "init");
     //uses anonymoos map cuz SWAG
@@ -54,8 +52,9 @@ bool CInjector::InjectSharedLibrary_manualmap(std::string filename) {
 
 
 
-
+void _entrypoint_prototype();
 using dlopen_t = decltype(dlopen);
+using entrypoint_t = decltype(_entrypoint_prototype);
 struct DLOPEN_DATA {
     dlopen_t* p_dlopen = 0;
     char fname[512];
@@ -70,10 +69,23 @@ void DlOpenShellcode(DLOPEN_DATA* p_dlopen_data) {
     inline_exit(0);
     inline_int3();
 }
+
+void EntryPointWrapperShellcode(entrypoint_t* entrypoint) {
+    entrypoint();
+    inline_exit(0);
+    inline_int3();
+}
 bool CInjector::RunEntryPoint(std::string module_fname, std::string proc_name) {
     module_fname = get_abs_path(module_fname);
     byte* proc = dlsymEx(module_fname, proc_name);
-    StartThreadAtAddress(proc);
+    std::cout << proc_name + " found @ " << (void*)proc<< "\n";
+    if(proc == nullptr)
+        throw std::runtime_error("Unable to find proc address, possibly because module is not injected.");
+
+    Buffer shellcode_buf((byte*)&EntryPointWrapperShellcode, 0x1000);
+    void* p_shellcode = AllocateAnonymousAndWrite(shellcode_buf);
+    StartThreadAtAddress(p_shellcode, (uint64)proc);
+    return true;
 }
 bool CInjector::InjectSharedLibrary_dlopen(std::string filename) {
     
@@ -87,10 +99,9 @@ bool CInjector::InjectSharedLibrary_dlopen(std::string filename) {
     assert(filename.size() <= 512);
     memcpy(&dlopen_dat.fname, filename.c_str(), filename.size());
     
-    std::cout << dlopen_dat.fname << "\n";
     void* p_dlopen_dat = AllocateAnonymousAndWrite(Buffer((byte*)&dlopen_dat, sizeof(dlopen_dat)), PROT_READ | PROT_WRITE);
     Buffer shellcode_buf((byte*)&DlOpenShellcode, 0x1000);
-    shellcode_buf.DumpToFile("sc.bin");
+    //shellcode_buf.DumpToFile("sc.bin");
     void* p_shellcode = AllocateAnonymousAndWrite(shellcode_buf);
     StartThreadAtAddress(p_shellcode, (uint64)p_dlopen_dat);
     

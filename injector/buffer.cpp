@@ -20,7 +20,7 @@ Buffer::Buffer(std::string fname) {
     if ((fd = open (fname.c_str(), O_RDONLY)) < 0)//edited here
     {
         std::cout << "can't open " << fname << "\n";
-        throw std::exception();
+        throw std::runtime_error("failed to open memory");
     }
     off_t fsize = lseek(fd, 0, SEEK_END);
     p_buf = (byte*)mmap(0, fsize, PROT_READ, MAP_SHARED, fd, 0);

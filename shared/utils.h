@@ -95,11 +95,11 @@ __always_inline void inline_int3()
 
 
 inline uint64 dlsymFile(const std::string& filename, const std::string& proc) {
-    std::string res = exec_shell("readelf -Ws " + filename + " | grep " + proc);
+    std::string res = exec_shell("readelf -Ws " + filename + " | grep \" " + proc + "\"");
     if(res.size() == 0)
         return 0;
     res = string_split(string_split(res, ": ")[1], " ")[0];
-    return str_to_uint64(res);
+    return str_to_uint64(res, 16);
 }
 
 inline std::string get_abs_path(const std::string& str) {

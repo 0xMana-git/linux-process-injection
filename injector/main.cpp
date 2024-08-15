@@ -5,7 +5,7 @@ using namespace Injector;
 
 int main(int argc, char** argv) {
     if(argc < 2) {
-        std::cout << "Usage: injector <pid or name> <module name(uses bin/module.so if not supplied)> <mode>\nModes: 0: dlopen\n1: start entrypoint(if injected already)";
+        std::cout << "Usage: injector <pid or name> <module name(uses bin/module.so if not supplied)> <mode>\nModes: 0: dlopen\n1: start entrypoint(if injected already)\n";
         return 0;
     }
 
@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     } else {
         std::string res = exec_shell(std::string("ps -e | grep ")+ argv[1]);
         if(res.size() == 0)
-            throw std::exception();
+            throw std::runtime_error("cannot find target process");
         pid = atol(string_split(res, " ")[1].c_str());
         std::cout << "Found process with pid " << pid << "\n"; 
     }
