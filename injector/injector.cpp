@@ -65,15 +65,8 @@ struct DLOPEN_DATA {
 };
 
 void DlOpenShellcode(DLOPEN_DATA* p_dlopen_data) {
-    char text0[] = "before dlopen\n";
-    char text1[] = "after dlopen\n";
-    char text2[] = "dlopen fail :(\n";
-    inline_write(STDOUT_FILENO, &p_dlopen_data->fname, sizeof(p_dlopen_data->fname));
+
     void* result = (p_dlopen_data->p_dlopen)((const char*)(&(p_dlopen_data->fname)), RTLD_NOW);
-    if(result != nullptr)
-        inline_write(STDOUT_FILENO, &text1, sizeof(text1));
-    else
-        inline_write(STDOUT_FILENO, &text2, sizeof(text2));
     inline_exit(0);
     inline_int3();
 }
