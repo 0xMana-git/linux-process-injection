@@ -2,7 +2,9 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <filesystem>
 #include "typedefs.h"
+
 inline std::vector<std::string> string_split(const std::string& s, std::string delimiter) {
     uint64 pos_start = 0, pos_end, delim_len = delimiter.length();
     std::string token;
@@ -89,4 +91,19 @@ __always_inline void inline_int3()
     (
         "int3"
     );
+}
+
+
+inline uint64 dlsymFile(const std::string& filename, const std::string& proc) {
+    std::string res = exec_shell("readelf -Ws " + filename + " | grep " + proc);
+    if(res.size() == 0)
+        return 0;
+    res = string_split(string_split(res, ": ")[1], " ")[0];
+    return str_to_uint64(res);
+}
+
+inline std::string get_abs_path(const std::string& str) {
+    if(str[0] != '/')
+        return (std::filesystem::current_path().string() + "/" + str + "\x00");
+    return str;
 }

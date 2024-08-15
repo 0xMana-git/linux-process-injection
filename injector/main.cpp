@@ -5,7 +5,7 @@ using namespace Injector;
 
 int main(int argc, char** argv) {
     if(argc < 2) {
-        std::cout << "Usage: injector <pid or name> <module name(uses bin/module.so if not supplied)>\n";
+        std::cout << "Usage: injector <pid or name> <module name(uses bin/module.so if not supplied)> <mode>\nModes: 0: dlopen\n1: start entrypoint(if injected already)";
         return 0;
     }
 
@@ -20,8 +20,12 @@ int main(int argc, char** argv) {
         std::cout << "Found process with pid " << pid << "\n"; 
     }
     std::string mod_name("bin/module.so");
-    if(argc == 3) {
+    if(argc >= 3) {
         mod_name = argv[2];
+    }
+    int mode = 0;
+    if(argc >= 4){
+        mode = atoi(argv[3]);
     }
 
     //prints hello world and exits
@@ -32,7 +36,17 @@ int main(int argc, char** argv) {
     injector.Init();
     std::cout << "Starting inject...\n";
     //injector.InjectShellcodeWriteAnonymous(scb, 0);
-    injector.InjectSharedLibrary_dlopen(mod_name);
+
+    switch (mode)
+    {
+    case 1:
+        injector.RunEntryPoint(mod_name);
+        break;
+    
+    default:
+        injector.InjectSharedLibrary_dlopen(mod_name);
+        break;
+    }
     injector.FreeResources();
     std::cout << "Inject complete.\n";
     //while(1) {sleep(1);};

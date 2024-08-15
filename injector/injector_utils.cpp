@@ -157,7 +157,7 @@ bool CInjector::WriteBufferToProcess(const Buffer& buf, void* dst_addr) {
 byte* CInjector::dlsymEx(const std::string& mod_name, const std::string& sym_name) {
 
     std::string modbase_s = string_split(string_split(exec_shell("cat " + GetBaseProcDir() + "maps" + " | grep " + mod_name), " ")[0], "-")[0];
-    std::string sym_offset = string_split(string_split(exec_shell("readelf -Ws " + mod_name + " | grep " + sym_name), ": ")[1], " ")[0];
-    return (byte*)(str_to_uint64(modbase_s, 16) + str_to_uint64(sym_offset, 16));
+    uint64 sym_offset = dlsymFile(mod_name, sym_name);
+    return (byte*)(str_to_uint64(modbase_s, 16) + sym_offset);
 
 }

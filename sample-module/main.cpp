@@ -7,6 +7,7 @@
 
 
 
+extern "C" 
 void __attribute__((constructor)) init() {
     std::cout << "hello from injected module!\n";
     std::cout << exec_shell("kwin_x11 --replace");

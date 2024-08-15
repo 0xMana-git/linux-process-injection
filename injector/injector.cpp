@@ -36,14 +36,11 @@ bool CInjector::InjectShellcodeWriteAnonymous(std::string filename, uint64 param
     return InjectShellcodeWriteAnonymous(buf);
 }
 
-uint64 FindEntryPoint(std::string filename) {
-    std::string res = exec_shell("objdump " + filename + " -d | grep \"<init>\"");
-    return strtoull(string_split(res, " ")[0].c_str(), NULL, 16);
-}
+
 static char lol[] = "hello";
 
 bool CInjector::InjectSharedLibrary_manualmap(std::string filename) {
-    uint64 entry_offset = FindEntryPoint(filename);
+    uint64 entry_offset = dlsymFile(filename, "init");
     //uses anonymoos map cuz SWAG
     Buffer module_buf(filename);
     //rwx by default
@@ -54,6 +51,9 @@ bool CInjector::InjectSharedLibrary_manualmap(std::string filename) {
 
     return true;
 }
+
+
+
 
 using dlopen_t = decltype(dlopen);
 struct DLOPEN_DATA {
@@ -70,15 +70,18 @@ void DlOpenShellcode(DLOPEN_DATA* p_dlopen_data) {
     inline_exit(0);
     inline_int3();
 }
-
+bool CInjector::RunEntryPoint(std::string module_fname, std::string proc_name) {
+    module_fname = get_abs_path(module_fname);
+    byte* proc = dlsymEx(module_fname, proc_name);
+    StartThreadAtAddress(proc);
+}
 bool CInjector::InjectSharedLibrary_dlopen(std::string filename) {
-    //uint64 entry_offset = FindEntryPoint(filename);
+    
     DLOPEN_DATA dlopen_dat;
     dlopen_dat.p_dlopen = (dlopen_t*)dlsymEx("/usr/lib/libc.so.6", "dlopen");
     std::cout << "dlopen found @ " << (void*)dlopen_dat.p_dlopen << "\n";
 
-    if(filename[0] != '/')
-        filename = (std::filesystem::current_path().string() + "/" + filename + "\x00");
+    filename = get_abs_path(filename);
 
     //filename = "/usr/lib/libc.so.6";
     assert(filename.size() <= 512);

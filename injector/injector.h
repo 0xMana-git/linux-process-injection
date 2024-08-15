@@ -76,6 +76,8 @@ namespace Injector {
 
         bool InjectSharedLibrary_dlopen(std::string filename);
         bool InjectSharedLibrary_manualmap(std::string filename);
+
+        bool RunEntryPoint(std::string module_fname, std::string proc_name = "init");
         inline bool Init() {
             Attach();
             OpenProcessMemory();
