@@ -178,17 +178,28 @@ uint64 FindEntryPoint(std::string filename) {
 }
 static char lol[] = "hello";
 
-bool CInjector::InjectSharedLibrary(std::string filename) {
+bool CInjector::InjectSharedLibrary_manualmap(std::string filename) {
     uint64 entry_offset = FindEntryPoint(filename);
     //uses anonymoos map cuz SWAG
     Buffer module_buf(filename);
     //rwx by default
     byte* module_dst_buf = (byte*)AllocateAnonymous(module_buf.buf_size, PROT_READ | PROT_EXEC);
     WriteBufferToProcess(module_buf, module_dst_buf);
-    int a;
-    std::cin >> a;
+
     StartThreadAtAddress(module_dst_buf + entry_offset);
 
     return true;
 }
-        
+
+bool CInjector::InjectSharedLibrary_dlopen(std::string filename) {
+    uint64 entry_offset = FindEntryPoint(filename);
+    //uses anonymoos map cuz SWAG
+    Buffer module_buf(filename);
+    //rwx by default
+    byte* module_dst_buf = (byte*)AllocateAnonymous(module_buf.buf_size, PROT_READ | PROT_EXEC);
+    WriteBufferToProcess(module_buf, module_dst_buf);
+
+    StartThreadAtAddress(module_dst_buf + entry_offset);
+
+    return true;
+}

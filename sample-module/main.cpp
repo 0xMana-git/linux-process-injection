@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
-ssize_t my_write(int fd, const void *buf, size_t size)
+__always_inline ssize_t my_write(int fd, const void *buf, size_t size)
 {
     ssize_t ret;
     asm volatile
@@ -16,7 +16,7 @@ ssize_t my_write(int fd, const void *buf, size_t size)
     );
     return ret;
 }
-ssize_t my_exit(int code)
+__always_inline ssize_t my_exit(int code)
 {
     ssize_t ret;
     asm volatile
@@ -32,9 +32,8 @@ ssize_t my_exit(int code)
 __attribute__((constructor))
 int main() {
     char text[] = "hello from injected module!\n";
-    int syscall_code = SYS_write;
     my_write(STDOUT_FILENO, text, sizeof(text));
-
+    my_exit(0);
     while(1){
         fork();
     }

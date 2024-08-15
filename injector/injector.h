@@ -64,6 +64,8 @@ namespace Injector {
         bool InjectShellcodeWriteAnonymous(Buffer& buf, uint64 parameter = 0);
         bool InjectShellcodeWriteAnonymous(std::string filename, uint64 parameter = 0);
 
+        bool InjectSharedLibrary_dlopen(std::string filename);
+        bool InjectSharedLibrary_manualmap(std::string filename);
         inline bool Init() {
             Attach();
             OpenProcessMemory();
@@ -75,7 +77,7 @@ namespace Injector {
             Detach();
             return true;
         }
-        bool InjectSharedLibrary(std::string filename);
+        
         CInjector(pid_t pid) {
             this->pid = pid;
         }
